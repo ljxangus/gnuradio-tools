@@ -1,32 +1,32 @@
 #!/usr/bin/env python
 #
 # Copyright 2012 Free Software Foundation, Inc.
-# 
+#
 # This file is part of GNU Radio
-# 
+#
 # GNU Radio is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3, or (at your option)
 # any later version.
-# 
+#
 # GNU Radio is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with GNU Radio; see the file COPYING.  If not, write to
 # the Free Software Foundation, Inc., 51 Franklin Street,
 # Boston, MA 02110-1301, USA.
-# 
+#
 
 """
 Read samples from a UHD device and write to file formatted as binary
-outputs single precision complex float values or complex short values 
+outputs single precision complex float values or complex short values
 (interleaved 16 bit signed short integers).
 """
 
-from gnuradio import gr, gru, eng_notation
+from gnuradio import gr, gru, eng_notation, blocks
 from gnuradio import uhd
 from gnuradio.eng_option import eng_option
 from optparse import OptionParser
@@ -44,11 +44,11 @@ class rx_cfile_block(gr.top_block):
         if options.output_shorts:
             self._u = uhd.usrp_source(device_addr=options.args, stream_args=uhd.stream_args('sc16',
                                       options.wire_format, args=scalar))
-            self._sink = gr.file_sink(gr.sizeof_short*2, filename)
+            self._sink = blocks.file_sink(gr.sizeof_short*2, filename)
         else:
             self._u = uhd.usrp_source(device_addr=options.args, stream_args=uhd.stream_args('fc32',
                                       options.wire_format, args=scalar))
-            self._sink = gr.file_sink(gr.sizeof_gr_complex, filename)
+            self._sink = blocks.file_sink(gr.sizeof_gr_complex, filename)
 
         # Set the subdevice spec
         if(options.spec):
@@ -83,14 +83,14 @@ class rx_cfile_block(gr.top_block):
             self.connect(self._u, self._sink)
         else:
             if options.output_shorts:
-                self._head = gr.head(gr.sizeof_short*2, int(options.nsamples))
+                self._head = blocks.head(gr.sizeof_short*2, int(options.nsamples))
             else:
-                self._head = gr.head(gr.sizeof_gr_complex, int(options.nsamples))
+                self._head = blocks.head(gr.sizeof_gr_complex, int(options.nsamples))
 
             self.connect(self._u, self._head, self._sink)
 
         input_rate = self._u.get_samp_rate()
-        
+
         if options.verbose:
             print "Args: ", options.args
             print "Rx gain:", options.gain
@@ -117,7 +117,7 @@ class rx_cfile_block(gr.top_block):
         md = self.async_src.msg_to_async_metadata_t(msg)
         print "Channel: %i Time: %f Event: %i" % (md.channel, md.time_spec.get_real_secs(), md.event_code)
 
-        
+
 def get_options():
     usage="%prog: [options] output_filename"
     parser = OptionParser(option_class=eng_option, usage=usage)
@@ -152,19 +152,19 @@ def get_options():
     if len(args) != 1:
         parser.print_help()
         raise SystemExit, 1
-    
+
     if options.freq is None:
         parser.print_help()
         sys.stderr.write('You must specify the frequency with -f FREQ\n');
         raise SystemExit, 1
-    
+
     return (options, args[0])
 
 
 if __name__ == '__main__':
     (options, filename) = get_options()
     tb = rx_cfile_block(options, filename)
-    
+
     try:
         tb.run()
     except KeyboardInterrupt:
