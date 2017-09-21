@@ -97,6 +97,8 @@ def main():
     r = gr.enable_realtime_scheduling()
     if r != gr.RT_OK:
         print "Warning: failed to enable realtime scheduling"
+    if options.repeat:
+        print "Files will be repeatly transmit."
 
     tb.start()                       # start flow graph
 
