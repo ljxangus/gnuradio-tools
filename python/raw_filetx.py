@@ -49,7 +49,7 @@ class my_top_block(gr.top_block):
 
         # do this after for any adjustments to the options that may
         # occur in the sinks (specifically the UHD sink)
-        self.txpath = blocks.file_source(gr.sizeof_gr_complex, options.data_file)
+        self.txpath = blocks.file_source(gr.sizeof_gr_complex, options.data_file, options.repeat)
         self.amp = blocks.multiply_const_cc(options.amp)
         self.connect(self.txpath, self.amp, self.sink)
 
@@ -73,6 +73,8 @@ def main():
     parser = OptionParser(option_class=eng_option, conflict_handler="resolve")
     parser.add_option("-n", "--num", type="eng_float", default=1,
                       help="set number of packets [default=%default]")
+    parser.add_option("-r","--repeat", action="store_true", default=False,
+                      help="repeat transmitting the file or not [default=%default]")
     parser.add_option("","--data-file", default=None,
                       help="use complex input file for transmission")
     parser.add_option("","--to-file", default=None,
