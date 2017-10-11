@@ -47,14 +47,14 @@ class my_top_block(gr.top_block):
                                         options.spec, options.antenna,
                                         options.verbose)
         elif(options.to_file is not None):
-            self.sink = gr.file_sink(gr.sizeof_gr_complex, options.to_file)
+            self.sink = blocks.file_sink(gr.sizeof_gr_complex, options.to_file)
         else:
-            self.sink = gr.null_sink(gr.sizeof_gr_complex)
+            self.sink = blocks.null_sink(gr.sizeof_gr_complex)
 
         # do this after for any adjustments to the options that may
         # occur in the sinks (specifically the UHD sink)
-        self.txpath = gr.message_source(gr.sizeof_gr_complex, 3)
-        self.amp = gr.multiply_const_cc(options.amp)
+        self.txpath = blocks.message_source(gr.sizeof_gr_complex, 3)
+        self.amp = blocks.multiply_const_cc(options.amp)
         self.connect(self.txpath, self.amp, self.sink)
 
 # /////////////////////////////////////////////////////////////////////////////
