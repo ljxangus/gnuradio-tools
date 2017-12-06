@@ -24,6 +24,9 @@
 # @author: lzyou@inc.cuhk.edu.hk
 # @date:   Oct. 21, 2012
 #
+# @author: Jiaxin Liang
+# @email: lj015@ie.cuhk.edu.hk
+# @date:    Dec, 06, 2017
 
 from gnuradio import gr,blocks
 from gnuradio import eng_notation
@@ -79,6 +82,8 @@ def main():
                       help="set number of packets [default=%default]")
     parser.add_option("-g", "--gap", type="eng_float", default=0.005,
                       help="set number of samples between each transmission [default=%default]")
+    parser.add_option("-r","--repeat", action="store_true", default=False,
+                      help="repeat transmitting the file or not [default=%default]")
     parser.add_option("","--data-file", default=None,
                       help="use complex input file for transmission")
     parser.add_option("","--to-file", default=None,
@@ -86,7 +91,7 @@ def main():
     parser.add_option("-W", "--bandwidth", type="eng_float",
                       default=4e6,
                       help="set symbol bandwidth [default=%default]")
-    parser.add_option("", "--amp", type="eng_float", default=0.1,
+    parser.add_option("", "--amp", type="eng_float", default=0.5,
                       help="set gain factor for complex baseband floats [default=%default]")
     parser.add_option("", "--time", action="store_true", default=False,
                       help="set timed tx mode")
@@ -103,6 +108,8 @@ def main():
     r = gr.enable_realtime_scheduling()
     if r != gr.RT_OK:
         print "Warning: failed to enable realtime scheduling"
+    if options.repeat:
+        print "Files will be repeatly transmit."
 
     tb.start()                       # start flow graph
 
@@ -112,7 +119,7 @@ def main():
         parser.print_help(sys.stderr)
         sys.exit(1)
 
-    MAX_READ_BYTES = 1000000000
+    MAX_READ_BYTES = 200000000
     file_object = open(options.data_file)
     data = file_object.read(MAX_READ_BYTES)
     print "Length of payload = ", len(data), " | MAX_READ = ", MAX_READ_BYTES
@@ -123,7 +130,7 @@ def main():
     cnt = 0
     GAP = options.gap
     startTime = secs+0.1
-    while cnt < options.num:
+    while options.repeat or cnt < options.num:
         if options.time:
             send_pkt(data, startTime+cnt*GAP, eof=False)
         else:
