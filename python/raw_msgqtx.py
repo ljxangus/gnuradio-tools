@@ -91,7 +91,7 @@ def main():
     parser.add_option("-W", "--bandwidth", type="eng_float",
                       default=4e6,
                       help="set symbol bandwidth [default=%default]")
-    parser.add_option("", "--amp", type="eng_float", default=0.5,
+    parser.add_option("", "--amp", type="eng_float", default=0.1,
                       help="set gain factor for complex baseband floats [default=%default]")
     parser.add_option("", "--time", action="store_true", default=False,
                       help="set timed tx mode")
