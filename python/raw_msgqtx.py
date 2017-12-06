@@ -25,7 +25,7 @@
 # @date:   Oct. 21, 2012
 #
 
-from gnuradio import gr
+from gnuradio import gr,blocks
 from gnuradio import eng_notation
 from gnuradio.eng_option import eng_option
 from optparse import OptionParser
