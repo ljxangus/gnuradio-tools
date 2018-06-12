@@ -33,6 +33,7 @@ from gnuradio import eng_notation
 from gnuradio.eng_option import eng_option
 from optparse import OptionParser
 import time, struct, sys
+import raw
 
 from gnuradio import digital
 
@@ -56,9 +57,12 @@ class my_top_block(gr.top_block):
 
         # do this after for any adjustments to the options that may
         # occur in the sinks (specifically the UHD sink)
-        self.txpath = blocks.message_source(gr.sizeof_gr_complex, 3)
+        #self.txpath = blocks.message_burst_source(gr.sizeof_gr_complex, 10)
+        self.txpath = raw.message_tag_source(gr.sizeof_gr_complex, 10)
+        self.tag_debug = blocks.tag_debug(gr.sizeof_gr_complex,'Tag Debugger')
         self.amp = blocks.multiply_const_cc(options.amp)
         self.connect(self.txpath, self.amp, self.sink)
+        #self.connect(self.txpath,self.tag_debug)
 
 # /////////////////////////////////////////////////////////////////////////////
 #                                   main
@@ -68,9 +72,9 @@ def main():
 
     def send_pkt(payload='', timestamp=None, eof=False):
         if eof:
-            msg = gr.message(1)
+            msg = raw.message(1)
         else:
-            msg = gr.message_from_string(payload)
+            msg = raw.message_from_string2(payload)
             if timestamp is not None:
                 secs = long(timestamp)
                 frac_secs = timestamp - long(timestamp)
@@ -130,6 +134,13 @@ def main():
     cnt = 0
     GAP = options.gap
     startTime = secs+0.1
+
+    pkt_duration = len(data) *1.0 / options.bandwidth
+    
+    if GAP < pkt_duration:
+        print "Gap is smaller than duration, corrected with GAP + pkt_duration"
+        GAP += pkt_duration
+
     while options.repeat or cnt < options.num:
         if options.time:
             send_pkt(data, startTime+cnt*GAP, eof=False)
