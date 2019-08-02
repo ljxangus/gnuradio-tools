@@ -59,7 +59,7 @@ class my_top_block(gr.top_block):
         # occur in the sinks (specifically the UHD sink)
         #self.txpath = blocks.message_burst_source(gr.sizeof_gr_complex, 10)
         self.txpath = raw.message_tag_source(gr.sizeof_gr_complex, 10)
-        self.tag_debug = blocks.tag_debug(gr.sizeof_gr_complex,'Tag Debugger')
+        #self.tag_debug = blocks.tag_debug(gr.sizeof_gr_complex,'Tag Debugger')
         self.amp = blocks.multiply_const_cc(options.amp)
         self.connect(self.txpath, self.amp, self.sink)
         #self.connect(self.txpath,self.tag_debug)
@@ -72,7 +72,7 @@ def main():
 
     def send_pkt(payload='', timestamp=None, eof=False):
         if eof:
-            msg = raw.message(1)
+            msg = raw.message2(1)
         else:
             msg = raw.message_from_string2(payload)
             if timestamp is not None:
@@ -85,7 +85,7 @@ def main():
     parser.add_option("-n", "--num", type="eng_float", default=1,
                       help="set number of packets [default=%default]")
     parser.add_option("-g", "--gap", type="eng_float", default=0.005,
-                      help="set number of samples between each transmission [default=%default]")
+                      help="set number of seconds between each transmission [default=%default]")
     parser.add_option("-r","--repeat", action="store_true", default=False,
                       help="repeat transmitting the file or not [default=%default]")
     parser.add_option("","--data-file", default=None,
@@ -130,9 +130,9 @@ def main():
     file_object.close()
 
     secs, frac = tb.sink.get_usrp_time()
-    print "USRP Time: ", secs
     cnt = 0
     GAP = options.gap
+    print "USRP Time: %f, GAP: %f" % (secs,GAP)
     startTime = secs+0.1
 
     pkt_duration = len(data) *1.0 / options.bandwidth
